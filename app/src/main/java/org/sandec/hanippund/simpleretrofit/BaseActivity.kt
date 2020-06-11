@@ -3,78 +3,37 @@ package org.sandec.hanippund.simpleretrofit
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import okhttp3.OkHttpClient
 import okhttp3.Response
-import org.sandec.hanippund.easyretrofit.listener.AuthorizationListener
 import org.sandec.hanippund.easyretrofit.SimpleRetrofit
+import org.sandec.hanippund.easyretrofit.listener.InterceptorListener
 import org.sandec.hanippund.simpleretrofit.preference.PreferenceHelper
-import java.util.concurrent.TimeUnit
 
-abstract class BaseActivity : AppCompatActivity(){
+abstract class BaseActivity : AppCompatActivity() {
+
+    lateinit var simpleRetrofit: SimpleRetrofit
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val baseUrl = "http://192.168.100.9:5000/"
+        val baseUrl = "http:/172.28.1.62:5000/"
 
-        /** Use it when you want configuration retrofit is default */
-        //retrofitCOnfigDefault(baseUrl)
-
-        /** use this if you want to use an AuthorizationListener modification */
-        retrofitCOnfigCustomAuthorizationListener(baseUrl)
-
-        /** use this if you want to use an OkHttpClient modification */
-//        retrofitCOnfigCustomOkHttpClient(baseUrl)
-    }
-
-    /**
-     * Default configuration Retrofit
-     *
-     * @param baseUrl is Base url to server
-     *
-     * */
-    private fun retrofitCOnfigDefault(baseUrl: String){
-        SimpleRetrofit()
+        simpleRetrofit = SimpleRetrofit(this)
             .setBaseUrl(baseUrl)
-            .setOkHttpClient()
-    }
-
-    /**
-     * Configuration Retrofit with custom AuthorizationListener
-     *
-     * @param baseUrl is Base url to server
-     *
-     * */
-    private fun retrofitCOnfigCustomAuthorizationListener(baseUrl: String) {
-        val authorizationListener = object :
-            AuthorizationListener {
-            override fun onAuthorizationFailed(response: Response) {
-                PreferenceHelper(this@BaseActivity).succesLogout()
-
-                finishAffinity()
-                val intent = Intent(this@BaseActivity, LoginActivity::class.java)
-                startActivity(intent)
-            }
-        }
-
-        SimpleRetrofit()
-            .setBaseUrl(baseUrl)
-            .setOkHttpClient(authorizationListener)
-    }
-
-    /**
-     * Configuration Retrofit with custom OkHttpClient
-     *
-     * @param baseUrl is Base url to server
-     *
-     * */
-    private fun retrofitCOnfigCustomOkHttpClient(baseUrl: String) {
-        val okHttpClient = OkHttpClient.Builder()
-            .connectTimeout(500, TimeUnit.SECONDS)
+            .setConnectionTimeout(5000)
+            .setReadTimeout(5000)
+            .setWriteTimeout(5000)
+            .setAuthorizationListener(interceptorListener)
             .build()
 
-        SimpleRetrofit()
-            .setBaseUrl(baseUrl)
-            .setOkHttpClient(okHttpClient)
+    }
+
+    val interceptorListener = object : InterceptorListener {
+        override fun onAuthorizationFailed(response: Response) {
+            PreferenceHelper(this@BaseActivity).succesLogout()
+
+            finishAffinity()
+            val intent = Intent(this@BaseActivity, LoginActivity::class.java)
+            startActivity(intent)
+        }
     }
 }

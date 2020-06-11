@@ -16,5 +16,5 @@ interface ResponseListener<T> {
      * @param throwable is the failure throwable from retrofit
      * @param json is the response when success convert to json, if not maybe is null
      * */
-    fun onFailure(throwable: Throwable, json: String?)
+    fun onFailure(throwable: Throwable, json: String?, message: String?)
 }

@@ -2,7 +2,7 @@ package org.sandec.hanippund.easyretrofit.listener
 
 import okhttp3.Response
 
-interface AuthorizationListener {
+interface InterceptorListener {
 
     /**
      *
